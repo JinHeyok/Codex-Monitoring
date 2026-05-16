@@ -1,0 +1,45 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# Dependencies
+node_modules/
+
+# Build / test output
+dist/
+build/
+coverage/
+*.tsbuildinfo
+
+# Logs and runtime files
+*.log
+*.pid
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pm2/
+
+# Local caches
+.cache/
+.npm/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Generated local Codex snapshots
+data/*.json
+
+# Temporary files
+*.tmp
+*.temp
+tmp/
+temp/

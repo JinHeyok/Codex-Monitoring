@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Codex 토큰 모니터링</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="src/styles.css">
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="header-accent"></div>
+      <div class="header-content">
+        <div class="title-group">
+          <div class="app-icon" aria-hidden="true">
+            <span></span>
+          </div>
+          <div>
+            <div class="title-row">
+              <h1>Codex 토큰 모니터링</h1>
+              <span id="connection-badge" class="connection-badge is-connecting">연결 중</span>
+            </div>
+            <p class="subtitle">로컬 Codex 세션 로그 기반 사용량 · 비용 · 세션 활동 추적</p>
+            <div class="connection-row">
+              <span id="last-updated">마지막 갱신 대기 중</span>
+            </div>
+          </div>
+        </div>
+        <div class="header-actions">
+          <div class="period-segment" aria-label="기간 빠른 선택">
+            <button class="period-button" type="button" data-date-range="today">오늘</button>
+            <button class="period-button is-active" type="button" data-date-range="7d">7일</button>
+            <button class="period-button" type="button" data-date-range="30d">30일</button>
+            <button class="period-button" type="button" data-date-range="all">전체</button>
+          </div>
+          <label class="file-action">
+            <span>JSON 가져오기</span>
+            <input id="import-file" type="file" accept="application/json,.json">
+          </label>
+          <button id="export-button" type="button">요약 내보내기</button>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <select id="filter-date" class="visually-hidden" aria-hidden="true" tabindex="-1">
+        <option value="today">오늘</option>
+        <option value="7d" selected>최근 7일</option>
+        <option value="30d">최근 30일</option>
+        <option value="all">전체</option>
+      </select>
+
+      <section class="status-row" aria-live="polite">
+        <div id="status-message" class="status-message">로컬 사용량 데이터를 불러오는 중...</div>
+        <div id="stale-message" class="stale-message" hidden></div>
+      </section>
+
+      <section class="metrics-grid" aria-label="사용량 요약">
+        <article class="metric-card">
+          <span>주간 토큰 한도</span>
+          <strong id="metric-total">0</strong>
+        </article>
+        <article class="metric-card">
+          <span>5시간 토큰 한도</span>
+          <strong id="metric-input">0</strong>
+        </article>
+        <article class="metric-card">
+          <span>Codex CLI 활성화</span>
+          <strong id="metric-sessions">0</strong>
+        </article>
+        <article class="metric-card">
+          <span>활성 시간</span>
+          <strong id="metric-active-time">0s</strong>
+        </article>
+      </section>
+
+      <section class="budget-grid">
+        <article class="panel budget-panel">
+          <div class="panel-heading">
+            <h2>주간 토큰 한도</h2>
+            <span id="total-token-limit-status">한도 미설정</span>
+          </div>
+          <div class="budget-controls">
+            <label>
+              Web 알림 임계치 %
+              <input id="total-token-threshold" type="number" min="1" max="100" step="1" value="80">
+            </label>
+            <button id="total-token-threshold-save" class="secondary" type="button">저장</button>
+            <button id="total-token-notify-toggle" class="notification-toggle" type="button" aria-pressed="false">알림 꺼짐</button>
+          </div>
+          <div class="budget-progress">
+            <div class="budget-progress-label">
+              <span id="total-token-limit-label">이번 주 사용률 0%</span>
+              <span id="total-token-limit-percent">0% 남음</span>
+            </div>
+            <div class="progress-track">
+              <div id="total-token-limit-bar" class="progress-fill token"></div>
+              <div id="total-token-limit-marker" class="progress-marker"></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel budget-panel">
+          <div class="panel-heading">
+            <h2>5시간 토큰 한도</h2>
+            <span id="window-token-limit-status">한도 미설정</span>
+          </div>
+          <div class="budget-controls">
+            <label>
+              Web 알림 임계치 %
+              <input id="window-token-threshold" type="number" min="1" max="100" step="1" value="80">
+            </label>
+            <button id="window-token-threshold-save" class="secondary" type="button">저장</button>
+            <button id="window-token-notify-toggle" class="notification-toggle" type="button" aria-pressed="false">알림 꺼짐</button>
+          </div>
+          <div class="budget-progress">
+            <div class="budget-progress-label">
+              <span id="window-token-limit-label">현재 5시간 사용률 0%</span>
+              <span id="window-token-limit-percent">0% 남음</span>
+            </div>
+            <div class="progress-track">
+              <div id="window-token-limit-bar" class="progress-fill"></div>
+              <div id="window-token-limit-marker" class="progress-marker"></div>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section class="toolbar" aria-label="필터">
+        <label>
+          모델
+          <select id="filter-model"></select>
+        </label>
+        <label>
+          프로젝트
+          <select id="filter-project"></select>
+        </label>
+        <label>
+          세션
+          <select id="filter-session"></select>
+        </label>
+        <label>
+          정렬
+          <select id="sort-key">
+            <option value="date-desc">최신순</option>
+            <option value="date-asc">오래된순</option>
+            <option value="tokens-desc">토큰 많은순</option>
+            <option value="tokens-asc">토큰 적은순</option>
+            <option value="cost-desc">비용 높은순</option>
+            <option value="model-asc">모델 가나다순</option>
+            <option value="project-asc">프로젝트 가나다순</option>
+          </select>
+        </label>
+      </section>
+
+      <section class="visual-grid">
+        <article class="panel">
+          <div class="panel-heading">
+            <h2>일별 비용</h2>
+            <span id="cost-point-count">0일</span>
+          </div>
+          <div id="cost-chart" class="trend-chart"></div>
+        </article>
+        <article class="panel">
+          <div class="panel-heading">
+            <h2>토큰 사용량</h2>
+            <span>입력 · 출력 · 캐시 · 추론</span>
+          </div>
+          <div id="token-chart" class="bar-chart"></div>
+        </article>
+        <article class="panel">
+          <div class="panel-heading">
+            <h2>모델별 비용</h2>
+            <span id="model-count">0개 모델</span>
+          </div>
+          <div id="model-chart" class="bar-chart"></div>
+        </article>
+        <article class="panel">
+          <div class="panel-heading">
+            <h2>툴 사용 빈도</h2>
+            <span id="tool-count">0개</span>
+          </div>
+          <div id="tool-chart" class="bar-chart"></div>
+        </article>
+      </section>
+
+      <section class="panel detail-panel">
+        <div class="panel-heading">
+          <h2>사용 로그</h2>
+          <span id="estimate-label">예상 비용</span>
+        </div>
+        <div class="detail-controls">
+          <label>
+            로그 검색
+            <input id="log-search" type="search" placeholder="모델·프로젝트·세션 검색">
+          </label>
+          <label>
+            이벤트
+            <select id="event-filter"></select>
+          </label>
+          <label>
+            페이지 크기
+            <select id="page-size">
+              <option value="10">10개</option>
+              <option value="25" selected>25개</option>
+              <option value="50">50개</option>
+              <option value="100">100개</option>
+            </select>
+          </label>
+        </div>
+        <div id="empty-state" class="empty-state" hidden>현재 필터에 맞는 사용 기록이 없습니다.</div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>일시</th>
+                <th>이벤트</th>
+                <th>모델</th>
+                <th>비용</th>
+                <th>입력 / 출력</th>
+                <th>소요 시간</th>
+              </tr>
+            </thead>
+            <tbody id="usage-table"></tbody>
+          </table>
+        </div>
+        <div class="pagination">
+          <button id="prev-page" class="secondary" type="button">이전</button>
+          <span id="page-status">1 / 1</span>
+          <button id="next-page" class="secondary" type="button">다음</button>
+        </div>
+      </section>
+
+      <section class="panel import-panel">
+        <div class="panel-heading">
+          <h2>가져오기 보고서</h2>
+          <span id="source-label">샘플 데이터</span>
+        </div>
+        <div id="import-report" class="report-list">이번 세션의 가져오기 기록이 없습니다.</div>
+      </section>
+    </main>
+
+    <script type="module" src="src/app.js"></script>
+  </body>
+</html>

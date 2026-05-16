@@ -89,6 +89,9 @@
 - **FR-003**: Users MUST be able to [key interaction, e.g., "reset their password"]
 - **FR-004**: System MUST [data requirement, e.g., "persist user preferences"]
 - **FR-005**: System MUST [behavior, e.g., "log all security events"]
+- **FR-SEC**: System MUST avoid collecting secrets, raw prompts, customer data,
+  or unmasked internal infrastructure details unless explicitly approved in the
+  feature scope.
 
 *Example of marking unclear requirements:*
 
@@ -99,6 +102,12 @@
 
 - **[Entity 1]**: [What it represents, key attributes without implementation]
 - **[Entity 2]**: [What it represents, relationships to other entities]
+
+### Data Safety *(mandatory for usage-monitoring features)*
+
+- Identify which token usage metadata is collected.
+- Identify which sensitive fields are excluded or masked.
+- Identify how estimates and source data are labeled for users.
 
 ## Success Criteria *(mandatory)*
 

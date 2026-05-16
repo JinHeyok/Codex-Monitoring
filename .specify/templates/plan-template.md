@@ -31,7 +31,15 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+- Privacy-first token data: plan avoids secrets, raw prompts, customer data, and
+  unmasked infrastructure details.
+- Accurate usage accounting: plan identifies metric sources, calculation rules,
+  and estimate labeling.
+- Testable user journeys: plan includes validation for core import, viewing,
+  filtering, and export flows.
+- Observable operations: plan covers loading, empty, error, and stale-data states.
+- Simple local-first delivery: any external service, background job, or remote
+  persistence is justified by a user scenario.
 
 ## Project Structure
 

@@ -46,6 +46,13 @@ Pull requests should include a concise summary, test results, linked issue or ta
 Never commit secrets, credentials, private keys, customer data, internal host details, or raw authentication logs. Share configuration examples with placeholders such as `<HOST>`, `<PASSWORD>`, and `<TOKEN>`.
 
 <!-- SPECKIT START -->
+## Active Spec Kit Plan
+
+- Current feature plan: `specs/001-token-usage-dashboard/plan.md`
+- Follow the project constitution in `.specify/memory/constitution.md` before implementation.
+<!-- SPECKIT END -->
+
+<!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan
 <!-- SPECKIT END -->
