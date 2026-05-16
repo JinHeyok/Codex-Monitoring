@@ -7,7 +7,7 @@ Thumbs.db
 .vscode/
 .agents/
 .specify/
-.specs/
+.specs/*
 
 # Dependencies
 node_modules/
